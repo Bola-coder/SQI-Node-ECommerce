@@ -1,6 +1,8 @@
 const products = require("./../data/product");
+const Products = require("./../model/product");
 const getAllProducts = async (req, res) => {
   try {
+    const products = await Products.find();
     res.status(200).json({
       status: "success",
       message: "All products fetched successfully",
@@ -14,21 +16,14 @@ const getAllProducts = async (req, res) => {
 
 const createNewProduct = async (req, res) => {
   try {
-    const lastProductIndex = products.length;
-    const newProductId = lastProductIndex + 1;
-    const { title, price, description, category } = req.body;
-    if (!title || !price || !description || !category) {
+    const { title, price, description } = req.body;
+    if (!title || !price || !description) {
       throw new Error("Please provide all required fields");
     }
-    products.push({ id: newProductId, title, price, description, category });
-    const newProduct = {
-      id: newProductId,
-      title,
-      price,
-      description,
-      category,
-    };
-
+    const newProduct = await Products.create({ title, price, description });
+    if (!newProduct) {
+      throw new Error("An error occurred while creating the product");
+    }
     res.status(201).json({
       status: "success",
       message: "Product created successfully",
@@ -47,7 +42,7 @@ const createNewProduct = async (req, res) => {
 const getProductDetails = async (req, res) => {
   try {
     const { id } = req.params;
-    const product = products.find((product) => product.id === Number(id));
+    const product = await Products.findById(id);
     if (!product) {
       throw new Error(`Product not found with id of ${id}`);
     }
@@ -76,19 +71,10 @@ const updateProductDetails = async (req, res) => {
     if (!id) {
       throw new Error("Please provide the product id");
     }
-
-    const product = products.find((product) => product.id === Number(id));
-
-    if (!product) {
-      throw new Error(`Product not found with id of ${id}`);
-    }
-    // console.log("Current product", product);
-
-    const updatedProduct = { ...product, ...updateDetails };
-    // console.log("Updated product", updatedProduct);
-
-    const index = products.indexOf(product);
-    products[index] = updatedProduct;
+    const updatedProduct = await Products.findByIdAndUpdate(id, updateDetails, {
+      new: true,
+      runValidators: true,
+    });
     res.status(200).json({
       status: "success",
       message: "Product updated successfully",
@@ -107,12 +93,7 @@ const updateProductDetails = async (req, res) => {
 const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const product = products.find((product) => product.id === Number(id));
-    if (!product) {
-      throw new Error(`Product not found with id of ${id}`);
-    }
-    const index = products.indexOf(product);
-    products.splice(index, 1);
+    await Products.findByIdAndDelete(id);
     res.status(204).json({
       status: "success",
       message: "Product deleted successfully",

@@ -21,12 +21,21 @@ app.get("/api/v1", (req, res) => {
   });
 });
 
-app.use((req, res, next) => {
-  console.log("Davido is the GOAT (001)");
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log("Davido is the GOAT (001)");
+//   next();
+// });
 
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/users", userRoutes);
 
 module.exports = app;
+
+// Assignment for May 14th 2024.
+/*
+  Create a user.js file inside the model folder
+  Create a userSchema and give it 3 fields
+  No two users should have the same email,
+  Password should be at least 8 char long,
+  Update the user controllers to use the Users model
+*/
