@@ -1,11 +1,13 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 const productRoutes = require("./routes/product");
 const userRoutes = require("./routes/user");
 const app = express();
 
 app.use(express.json());
 app.use(morgan("dev"));
+app.use(cors());
 
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -30,12 +32,3 @@ app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/users", userRoutes);
 
 module.exports = app;
-
-// Assignment for May 14th 2024.
-/*
-  Create a user.js file inside the model folder
-  Create a userSchema and give it 3 fields
-  No two users should have the same email,
-  Password should be at least 8 char long,
-  Update the user controllers to use the Users model
-*/

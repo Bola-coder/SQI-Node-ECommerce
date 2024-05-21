@@ -1,7 +1,14 @@
-const users = require("./../data/user");
+// const users = require("./../data/user");
+const Users = require("./../model/user");
 
 const getAllUsers = async (req, res) => {
   try {
+    const users = await Users.find();
+
+    if (!users) {
+      throw new Error("No user found");
+    }
+
     res.status(200).json({
       status: "success",
       message: "All users fetched successfully",
@@ -20,8 +27,7 @@ const getAllUsers = async (req, res) => {
 
 const getSingleUser = async (req, res) => {
   try {
-    const { id } = req.params;
-    const user = users.find((user) => user.id === Number(id));
+    const user = await Users.findById(req.params.id);
     if (!user) {
       throw new Error(`User not found with id of ${id}`);
     }
@@ -42,19 +48,10 @@ const getSingleUser = async (req, res) => {
 
 const createNewUser = async (req, res) => {
   try {
-    const lastUserId = users.length;
-    const newUserId = lastUserId + 1;
-    const { name, email } = req.body;
-    if (!name || !email) {
-      throw new Error("Please provide all required fields");
+    const newUser = await Users.create(req.body);
+    if (!newUser) {
+      throw new Error("An error occurred while creating the user");
     }
-    users.push({ id: newUserId, name, email });
-    const newUser = {
-      id: newUserId,
-      name,
-      email,
-    };
-
     res.status(201).json({
       status: "success",
       message: "User created successfully",
