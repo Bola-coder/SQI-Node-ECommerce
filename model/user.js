@@ -1,12 +1,13 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
-  firstName: {
+  firstname: {
     type: String,
     required: [true, "Please provide a first name"],
     trim: true,
   },
-  lastName: {
+  lastname: {
     type: String,
     required: [true, "Please provide a last name"],
     trim: true,
@@ -21,13 +22,27 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please provide a password"],
     minlength: [8, "Password must be at least 8 characters long"],
+    select: false,
   },
   bio: {
     type: String,
     trim: true,
   },
+
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user",
+  },
 });
 
+userSchema.methods.getFullName = function () {
+  return `${this.firstname} ${this.lastname}`;
+};
+
+userSchema.methods.comparePassword = async function (password, hashedPassword) {
+  return await bcrypt.compare(password, hashedPassword);
+};
 const Users = mongoose.model("Users", userSchema);
 
 module.exports = Users;

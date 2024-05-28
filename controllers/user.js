@@ -31,11 +31,14 @@ const getSingleUser = async (req, res) => {
     if (!user) {
       throw new Error(`User not found with id of ${id}`);
     }
+    const fullname = user.getFullName();
+
     res.status(200).json({
       status: "success",
       message: "User fetched successfully",
       data: {
         user,
+        fullname,
       },
     });
   } catch (error) {
