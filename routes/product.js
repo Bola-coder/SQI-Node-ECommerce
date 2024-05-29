@@ -5,11 +5,25 @@ const {
   getProductDetails,
   updateProductDetails,
   deleteProduct,
+  getAllProductsByAdmin,
 } = require("./../controllers/product");
+const authMiddleware = require("./../middleware/auth");
 
 const router = express.Router();
 
-router.route("/").get(getAllProducts).post(createNewProduct);
+router.use(authMiddleware.protectRoute);
+router
+  .route("/")
+  .get(authMiddleware.protectRoute, getAllProducts)
+  .post(authMiddleware.protectRoute, createNewProduct);
+
+router
+  .route("/admin")
+  .get(
+    authMiddleware.protectRoute,
+    authMiddleware.verifyIsAdmin,
+    getAllProductsByAdmin
+  );
 
 router
   .route("/:id")

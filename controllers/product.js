@@ -2,7 +2,8 @@ const products = require("./../data/product");
 const Products = require("./../model/product");
 const getAllProducts = async (req, res) => {
   try {
-    const products = await Products.find();
+    const userId = req.user._id;
+    const products = await Products.find({ user: userId }).populate("user");
     res.status(200).json({
       status: "success",
       message: "All products fetched successfully",
@@ -16,11 +17,17 @@ const getAllProducts = async (req, res) => {
 
 const createNewProduct = async (req, res) => {
   try {
+    const userId = req.user._id;
     const { title, price, description } = req.body;
     if (!title || !price || !description) {
       throw new Error("Please provide all required fields");
     }
-    const newProduct = await Products.create({ title, price, description });
+    const newProduct = await Products.create({
+      title,
+      price,
+      description,
+      user: userId,
+    });
     if (!newProduct) {
       throw new Error("An error occurred while creating the product");
     }
@@ -107,10 +114,30 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+const getAllProductsByAdmin = async (req, res) => {
+  try {
+    const products = await Products.find().populate("user");
+    res.status(200).json({
+      status: "success",
+      message: "All products fetched successfully",
+      result: products.length,
+      data: {
+        products,
+      },
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: "error",
+      message: "An error occurred with message: " + error.message,
+    });
+  }
+};
+
 module.exports = {
   getAllProducts,
   createNewProduct,
   getProductDetails,
   updateProductDetails,
   deleteProduct,
+  getAllProductsByAdmin,
 };
