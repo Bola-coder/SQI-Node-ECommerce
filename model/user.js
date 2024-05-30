@@ -34,6 +34,15 @@ const userSchema = new mongoose.Schema({
     enum: ["user", "admin"],
     default: "user",
   },
+
+  verification_token: {
+    type: String,
+  },
+
+  email_verified: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 userSchema.methods.getFullName = function () {
