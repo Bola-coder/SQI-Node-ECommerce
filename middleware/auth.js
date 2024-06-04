@@ -1,5 +1,6 @@
 const Users = require("./../model/user");
 const jwt = require("jsonwebtoken");
+const AppError = require("./../utils/AppError");
 
 const protectRoute = async (req, res, next) => {
   try {
@@ -17,9 +18,7 @@ const protectRoute = async (req, res, next) => {
 
     // Check if token exists
     if (!token) {
-      throw new Error(
-        "You are not authorized to access this route. Please login to continue"
-      );
+      throw new AppError("You are not logged in, please login", 401);
     }
 
     // Verify token
@@ -30,17 +29,13 @@ const protectRoute = async (req, res, next) => {
     const user = await Users.findById(decoded.id);
 
     if (!user) {
-      throw new Error("User with the specified ID not found");
+      throw new AppError("User with the specified ID not found", 404);
     }
 
     req.user = user;
     next();
   } catch (error) {
-    console.log(error);
-    res.status(401).json({
-      status: "fail",
-      message: error.message,
-    });
+    next(error);
   }
 };
 

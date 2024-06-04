@@ -10,20 +10,18 @@ const {
 const authMiddleware = require("./../middleware/auth");
 
 const router = express.Router();
-
-router.use(authMiddleware.protectRoute);
 router
   .route("/")
-  .get(authMiddleware.protectRoute, getAllProducts)
+  .get(getAllProducts)
   .post(authMiddleware.protectRoute, createNewProduct);
 
-router
-  .route("/admin")
-  .get(
-    authMiddleware.protectRoute,
-    authMiddleware.verifyIsAdmin,
-    getAllProductsByAdmin
-  );
+// router
+//   .route("/admin")
+//   .get(
+//     authMiddleware.protectRoute,
+//     authMiddleware.verifyIsAdmin,
+//     getAllProductsByAdmin
+//   );
 
 router
   .route("/:id")

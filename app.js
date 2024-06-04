@@ -4,6 +4,7 @@ const cors = require("cors");
 const productRoutes = require("./routes/product");
 const userRoutes = require("./routes/user");
 const authRoutes = require("./routes/auth");
+const errorHandler = require("./middleware/error");
 const app = express();
 
 app.use(express.json());
@@ -39,5 +40,8 @@ app.all("*", (req, res) => {
     message: `Can't find ${req.originalUrl} with method ${req.method} on this server. Route not defined`,
   });
 });
+
+// Calling our error handler
+app.use(errorHandler);
 
 module.exports = app;

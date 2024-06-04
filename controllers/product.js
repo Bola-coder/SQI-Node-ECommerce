@@ -1,9 +1,9 @@
+const AppError = require("../utils/AppError");
 const products = require("./../data/product");
 const Products = require("./../model/product");
 const getAllProducts = async (req, res) => {
   try {
-    const userId = req.user._id;
-    const products = await Products.find({ user: userId }).populate("user");
+    const products = await Products.find().populate("user");
     res.status(200).json({
       status: "success",
       message: "All products fetched successfully",
@@ -15,13 +15,13 @@ const getAllProducts = async (req, res) => {
   } catch (error) {}
 };
 
-const createNewProduct = async (req, res) => {
+const createNewProduct = async (req, res, next) => {
   try {
     const userId = req.user._id;
     const { title, price, description } = req.body;
-    if (!title || !price || !description) {
-      throw new Error("Please provide all required fields");
-    }
+    // if (!title || !price || !description) {
+    //   throw new AppError("Please provide all required fields", 400);
+    // }
     const newProduct = await Products.create({
       title,
       price,
@@ -29,7 +29,7 @@ const createNewProduct = async (req, res) => {
       user: userId,
     });
     if (!newProduct) {
-      throw new Error("An error occurred while creating the product");
+      throw new AppError("An error occurred while creating the product", 404);
     }
     res.status(201).json({
       status: "success",
@@ -39,19 +39,17 @@ const createNewProduct = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(404).json({
-      status: "error",
-      message: "An error occurred with message: " + error.message,
-    });
+    next(error);
   }
 };
 
-const getProductDetails = async (req, res) => {
+const getProductDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
+    console.log("Heyyyyyyyyyyyyyyyyy");
     const product = await Products.findById(id);
     if (!product) {
-      throw new Error(`Product not found with id of ${id}`);
+      throw new AppError("Product with the specified ID not found", 401);
     }
     res.status(200).json({
       status: "success",
@@ -61,10 +59,7 @@ const getProductDetails = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(404).json({
-      status: "error",
-      message: "An error occurred with message: " + error.message,
-    });
+    next(error);
   }
 };
 

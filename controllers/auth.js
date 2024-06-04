@@ -7,7 +7,7 @@ const crypto = require("crypto");
 
 const signup = async (req, res, next) => {
   try {
-    const { firstname, lastname, email, password, bio, role } = req.body;
+    const { firstname, lastname, email, password } = req.body;
     if (!firstname || !lastname || !email || !password) {
       return res.status(400).json({
         status: "error",
@@ -32,8 +32,6 @@ const signup = async (req, res, next) => {
       lastname,
       email,
       password: hashedPassword,
-      bio,
-      role,
     });
 
     if (!user) {
