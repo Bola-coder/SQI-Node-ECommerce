@@ -22,6 +22,10 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Users",
     },
+    image: {
+      type: String,
+      required: [true, "Image is required"],
+    },
   },
   {
     timestamps: true,

@@ -5,12 +5,14 @@ const productRoutes = require("./routes/product");
 const userRoutes = require("./routes/user");
 const authRoutes = require("./routes/auth");
 const errorHandler = require("./middleware/error");
+const { cloudinaryConfig } = require("./utils/cloudinary");
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
-app.use(cors());
-
+app.use(cors("*"));
+app.use("*", cloudinaryConfig);
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "success",

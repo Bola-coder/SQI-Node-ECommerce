@@ -1,6 +1,8 @@
 const AppError = require("../utils/AppError");
 const products = require("./../data/product");
 const Products = require("./../model/product");
+const { dataUri } = require("./../utils/multer");
+const { uploader } = require("./../utils/cloudinary");
 const getAllProducts = async (req, res) => {
   try {
     const products = await Products.find().populate("user");
@@ -17,6 +19,13 @@ const getAllProducts = async (req, res) => {
 
 const createNewProduct = async (req, res, next) => {
   try {
+    console.log(req.file);
+    const fileData = dataUri(req).content;
+    const result = await uploader.upload(fileData, {
+      folder: "SqiCommerce/Product",
+    });
+    console.log(result);
+    // console.log(fileData);
     const userId = req.user._id;
     const { title, price, description } = req.body;
     // if (!title || !price || !description) {
@@ -27,6 +36,7 @@ const createNewProduct = async (req, res, next) => {
       price,
       description,
       user: userId,
+      image: result.secure_url,
     });
     if (!newProduct) {
       throw new AppError("An error occurred while creating the product", 404);

@@ -8,12 +8,13 @@ const {
   getAllProductsByAdmin,
 } = require("./../controllers/product");
 const authMiddleware = require("./../middleware/auth");
+const { imageUploads } = require("./../utils/multer");
 
 const router = express.Router();
 router
   .route("/")
   .get(getAllProducts)
-  .post(authMiddleware.protectRoute, createNewProduct);
+  .post(authMiddleware.protectRoute, imageUploads, createNewProduct);
 
 // router
 //   .route("/admin")
