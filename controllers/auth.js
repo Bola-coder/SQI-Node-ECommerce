@@ -4,16 +4,18 @@ const jwt = require("jsonwebtoken");
 const signJWt = require("./../utils/signJwt");
 const sendEmail = require("./../utils/email");
 const crypto = require("crypto");
+const AppError = require("../utils/AppError");
+const { validateUserSignup } = require("./../validations/userValidation");
 
 const signup = async (req, res, next) => {
   try {
-    const { firstname, lastname, email, password } = req.body;
-    if (!firstname || !lastname || !email || !password) {
-      return res.status(400).json({
-        status: "error",
-        message: "Please provide all required fields",
-      });
+    console.log(req.body);
+    const validation = validateUserSignup(req.body);
+    if (validation?.error) {
+      throw new AppError(validation?.error.message, 400);
     }
+
+    const { firstname, lastname, email, password } = req.body;
 
     // Check if the user with the email already exists
     const existingUser = await Users.findOne({ email });
@@ -176,8 +178,104 @@ const verifyEmailAddress = async (req, res, next) => {
   }
 };
 
+//
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      throw new AppError("Please provide email address", 404);
+    }
+
+    // check if user with the email exist
+    const user = await Users.findOne({ email });
+    if (!user) {
+      throw new AppError("User with the email not found", 404);
+    }
+
+    // Create reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedResetToken = await bcrypt.hash(resetToken, 10);
+
+    // Create reset url
+    const resetUrl = `${req.protocol}://${req.get(
+      "host"
+    )}/api/v1/auth/resetpassword/${email}/${resetToken}`;
+
+    // Create reset message
+    const resetMessage = `Please click on the link below to reset your password. \n ${resetUrl} `;
+
+    // Reset mail options
+    const resetMailOptions = {
+      email: email,
+      subject: "Reset your password",
+      message: resetMessage,
+    };
+
+    // Send reset mail
+    await sendEmail(resetMailOptions);
+
+    // Update user record with hashed reset token
+    user.reset_password_token = hashedResetToken;
+    await user.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "Reset link sent to email",
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { email, resetToken } = req.params;
+    const { password, confirmPassword } = req.body;
+
+    if (!email || !resetToken || !password || !confirmPassword) {
+      throw new AppError("Please provide all required fields", 404);
+    }
+
+    // check if user with the email exist
+    const user = await Users.findOne({ email });
+    if (!user) {
+      throw new AppError("User with the email not found", 404);
+    }
+
+    // Check if the reset token is valid
+    const tokenValid = await bcrypt.compare(
+      resetToken,
+      user.reset_password_token
+    );
+
+    if (!tokenValid) {
+      throw new AppError("Invalid password reset token", 404);
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Update user record with new password
+    user.password = hashedPassword;
+    user.reset_password_token = undefined;
+    await user.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
 module.exports = {
   signup,
   login,
   verifyEmailAddress,
+  forgotPassword,
+  resetPassword,
 };

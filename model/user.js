@@ -43,6 +43,12 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  profile_image: {
+    type: String,
+  },
+  reset_password_token: {
+    type: String,
+  },
 });
 
 userSchema.methods.getFullName = function () {
