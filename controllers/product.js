@@ -3,6 +3,7 @@ const products = require("./../data/product");
 const Products = require("./../model/product");
 const { dataUri } = require("./../utils/multer");
 const { uploader } = require("./../utils/cloudinary");
+const { validateCreateProduct } = require("./../validations/productValidation");
 const getAllProducts = async (req, res) => {
   try {
     const products = await Products.find().populate("user");
@@ -27,6 +28,10 @@ const createNewProduct = async (req, res, next) => {
     console.log(result);
     // console.log(fileData);
     const userId = req.user._id;
+    const validation = validateCreateProduct(req.body);
+    if (validation.error) {
+      throw new AppError(validation.error.message, 400);
+    }
     const { title, price, description } = req.body;
     // if (!title || !price || !description) {
     //   throw new AppError("Please provide all required fields", 400);
